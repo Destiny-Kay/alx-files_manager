@@ -8,28 +8,30 @@ import { basicAuthenticate, xTokenAuthenticate } from '../middlewares/auth';
 import { APIError, errorResponse } from '../middlewares/error';
 
 /**
- * @function loadRoutes Loads routes on the main server app
- * @param {} server an express server instance
+ * Injects routes with their handlers to the given Express application.
+ * @param {Express} api
  */
-export default function loadRoutes(server) {
-  server.get('/status', AppController.getStatus);
-  server.get('/stats', AppController.getStats);
+const injectRoutes = (api) => {
+  api.get('/status', AppController.getStatus);
+  api.get('/stats', AppController.getStats);
 
-  server.get('/connect', basicAuthenticate, AuthController.getConnect);
-  server.get('/disconnect', xTokenAuthenticate, AuthController.getDisconnect);
+  api.get('/connect', basicAuthenticate, AuthController.getConnect);
+  api.get('/disconnect', xTokenAuthenticate, AuthController.getDisconnect);
 
-  server.post('/users', UsersController.postNew);
-  server.get('/users/me', xTokenAuthenticate, UsersController.getMe);
+  api.post('/users', UsersController.postNew);
+  api.get('/users/me', xTokenAuthenticate, UsersController.getMe);
 
-  server.post('/files', xTokenAuthenticate, FilesController.postUpload);
-  server.get('/files/:id', xTokenAuthenticate, FilesController.getShow);
-  server.get('/files', xTokenAuthenticate, FilesController.getIndex);
-  server.put('/files/:id/publish', xTokenAuthenticate, FilesController.putPublish);
-  server.put('/files/:id/unpublish', xTokenAuthenticate, FilesController.putUnpublish);
-  server.get('/files/:id/data', FilesController.getFile);
+  api.post('/files', xTokenAuthenticate, FilesController.postUpload);
+  api.get('/files/:id', xTokenAuthenticate, FilesController.getShow);
+  api.get('/files', xTokenAuthenticate, FilesController.getIndex);
+  api.put('/files/:id/publish', xTokenAuthenticate, FilesController.putPublish);
+  api.put('/files/:id/unpublish', xTokenAuthenticate, FilesController.putUnpublish);
+  api.get('/files/:id/data', FilesController.getFile);
 
-  server.all('*', (req, res, next) => {
+  api.all('*', (req, res, next) => {
     errorResponse(new APIError(404, `Cannot ${req.method} ${req.url}`), req, res, next);
   });
-  server.use(errorResponse);
-}
+  api.use(errorResponse);
+};
+
+export default injectRoutes;
